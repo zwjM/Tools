@@ -1,5 +1,6 @@
 import random
 import datetime
+import pandas as pd
 import pymysql
 class Sqlserver:
     #对调用数据库的方法进行封装
@@ -19,8 +20,6 @@ class Sqlserver:
         # self.connect=pymssql.connect(host=self.host,user=self.user,password=self.password,database=self.database)
         cur=self.connect.cursor()#设个游标
 
-        print(type(self.connect))
-        print(type(cur))
         if not cur:
             raise(NameError,"数据库连接失败")
         else:
@@ -31,20 +30,23 @@ class Sqlserver:
         cur=self.Getconnect()
         cur.executemany(sql)'''
 
-    def Query(self,sql):
+    def Query(self,sql,showall=True):
         #查询语句
         cur=self.Getconnect()
         timeQ1=datetime.datetime.now()
-        for j in range(1,101):
-            cur.execute(sql)
-        #data=cur.fetchall() #一次性取出所有数据
+        num = cur.execute(sql) 
+        print('一共：%d条'%num)
+        data=cur.fetchall() #一次性取出所有数据
+        
+        if showall:
+            print(pd.DataFrame(data))
         self.connect.close() #查询完毕后必须关闭连接
         timeQ2=datetime.datetime.now()
         t_sel=timeQ2-timeQ1 # 查询所用的时间
         if not sql:
             raise(NameError,"没有Sql语句")
         else:
-            return t_sel
+            print('用时：',t_sel)
         #return t_sel
     def InsertR(self,sql,num,info):
         #插入多条数据
