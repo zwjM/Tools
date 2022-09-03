@@ -1,5 +1,6 @@
 import random
 import datetime
+import pandas as pd
 import pymysql
 import pymssql
 class Sqlserver:
@@ -17,7 +18,9 @@ class Sqlserver:
             raise(NameError,"数据库名称错误")#异常处理
         #连接数据库
         self.connect=pymysql.connect(host=self.host,user=self.user,password=self.password,database=self.database,cursorclass=pymysql.cursors.Cursor)
+        # self.connect=pymssql.connect(host=self.host,user=self.user,password=self.password,database=self.database)
         cur=self.connect.cursor()#设个游标
+
         if not cur:
             raise(NameError,"数据库连接失败")
         else:
@@ -28,20 +31,23 @@ class Sqlserver:
         cur=self.Getconnect()
         cur.executemany(sql)
 
-    def select(self,sql):
+    def select(self,sql,showall=True):
         #查询语句
         cur=self.Getconnect()
         timeQ1=datetime.datetime.now()
-        for j in range(1,101):
-            print(cur.execute(sql))
-        #data=cur.fetchall() #一次性取出所有数据
+        num = cur.execute(sql) 
+        print('一共：%d条'%num)
+        data=cur.fetchall() #一次性取出所有数据
+        
+        if showall:
+            print(pd.DataFrame(data))
         self.connect.close() #查询完毕后必须关闭连接
         timeQ2=datetime.datetime.now()
         t_sel=timeQ2-timeQ1 # 查询所用的时间
         if not sql:
             raise(NameError,"没有Sql语句")
         else:
-            return t_sel
+            print('用时：',t_sel)
         #return t_sel
     def InsertR(self,sql,num,info):
         #插入多条数据
@@ -63,9 +69,11 @@ class Sqlserver:
     #登陆，连接数据库
     num=eval(input('请输入所要输入数据的条数：'))
     ss=Sqlserver(host="MSI",user="sa",password="qwerty",database="test")
-    create_sql="creat table T1 (id int,L1 varchar(2),L2 varchar(2),L3 varchar(2),L4 varchar(2),L5 varchar(2),L6 varchar(2),L7 varchar(2),L8 varchar(2),L9 varchar(2))"
-    ss.CreateTable(create_sql)
-    
+    #create_sql="creat table T1 (id int,L1 varchar(2),L2 varchar(2),L3 varchar(2),L4 varchar(2),L5 varchar(2),L6 varchar(2),L7 varchar(2),L8 varchar(2),L9 varchar(2))"
+    #ss.CreateTable(create_sql)
+
+    #insert_sql = "insert into T1 values(%d,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+    #insert_sql = "insert into T2 values(%d,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
     insert_sql = "insert into T3 values(%d,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
 
     ran = random.choice("abcdefghmklwpqxy")
