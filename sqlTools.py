@@ -1,5 +1,6 @@
 import random
 import datetime
+from sqlite3 import connect
 import pandas as pd
 import pymysql
 import pymssql
@@ -28,12 +29,25 @@ class Sqlserver:
         
     def CreateTable(self,sql):
         #创建数据表
-        cur=self.Getconnect()
+        cur=self.getCur()
         cur.executemany(sql)
+    #删除语句
+    def delete(self,sql):
+        try:
+            cur = self.getCur()
+            cur.execute(sql)
+            self.connect.commit()
+            print('finish')
+        except Exception as e:
+            print('delete error:'+e)
+        finally:
+            self.connect.close()
+            cur.close()
+
 
     def select(self,sql,showall=True):
         #查询语句
-        cur=self.Getconnect()
+        cur=self.getCur()
         timeQ1=datetime.datetime.now()
         num = cur.execute(sql) 
         print('一共：%d条'%num)
@@ -49,9 +63,9 @@ class Sqlserver:
         else:
             print('用时：',t_sel)
         #return t_sel
-    def InsertR(self,sql,num,info):
+    def InsertR(self,sql,info):
         #插入多条数据
-        cur=self.Getconnect()
+        cur=self.getCur()
         timeI1=datetime.datetime.now()
         cur.executemany(sql,info)
         self.connect.commit()
@@ -107,13 +121,18 @@ class msSqlSeverer:
     def create_table(self,sql):
         cur = self.getCur()
         cur.executemany(sql)
-    def select(self,sql):
+    def select(self,sql,showall=True):
         #查询语句
-        cur=self.Getconnect()
+        cur=self.getCur()
         timeQ1=datetime.datetime.now()
-        for j in range(1,101):
-            cur.execute(sql)
-        #data=cur.fetchall() #一次性取出所有数据
+        num = cur.execute(sql) 
+        print('一共：%d条'%num)
+        data=cur.fetchall() #一次性取出所有数据
+        
+        if showall:
+            print(pd.DataFrame(data))
+
+        
         self.connect.close() #查询完毕后必须关闭连接
         timeQ2=datetime.datetime.now()
         t_sel=timeQ2-timeQ1 # 查询所用的时间
@@ -121,5 +140,27 @@ class msSqlSeverer:
             raise(NameError,"没有Sql语句")
         else:
             return t_sel
+    def insectR(self,sql,info):
+        
+        try:
+            cur =self.getCur()
+            cur.executemany(sql,info)
+            self.connect.commit()
+            print("finish")
+        except Exception as e:
+            print("insert error:"+e)
+        finally:
+            cur.close()
+    def delete(self,sql):
+        try:
+            cur = self.getCur()
+            cur.execute(sql)
+            self.connect.commit()
+            print('finish')
+        except Exception as e:
+            print('delete error:'+e)
+        finally:
+            self.connect.close()
+            cur.close()
 
 
