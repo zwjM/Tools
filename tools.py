@@ -1,3 +1,5 @@
+from mimetypes import init
+from os import lstat
 from statistics import mean
 import pandas as pd 
 import matplotlib.pyplot as plt
@@ -27,6 +29,8 @@ def plot_importance(model, x_train):
     plt.hlines(y=0, xmin=0, xmax=len(coefs), linestyles="dashed")
     plt.show()
 
+
+        
 
 #03 convert series to supervised learning 得到训练的数据格式
 def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
@@ -61,35 +65,3 @@ def series_to_supervised(data, n_in=1, n_out=1, dropnan=True):
     return agg
 
 
-
-
-def rollWindowArima(sequence,window=15,pred_n=1):
-    
-    """
-    define forecasts=[] 在使用之前
-    @sequence:Dataframe,1列
-    @window:窗口大小
-    @pred_n:每个窗口向后预测的步长
-
-    """
-    
-    def calculate(train):
-        model = auto_arima(train, trace=True, error_action='ignore', suppress_warnings=True)
-        model.fit(train)
-        forecast = model.predict(n_periods =pred_n)
-        global forecasts
-        forecasts = np.append(forecasts,forecast)
-        return forecast
-    sequence.rolling(window,min_periods=window).apply(calculate)
-
-    #作图
-    forecasts=pd.DataFrame(forecasts[:-1],index = sequence.index[window:],columns=['Prediction'])
-    plt.figure(figsize=(14,8), dpi=800)
-    plt.plot(sequence[window:],label='Valid')
-    plt.plot(forecasts, label='Prediction')
-    plt.legend()
-    rmse = mean_squared_error(sequence[window:], forecasts[:-1], squared=False)
-    plt.title('RMSE : %.4f' % rmse)
-    plt.show()
-
-    return forecasts
